@@ -9,11 +9,11 @@ class GoogleAuth extends Component {
         await window.gapi.client.init({
           clientId:
             '649863271420-tkc9gksv5pt6d4nhhmhr1dr7qjei1ccf.apps.googleusercontent.com',
-          scope: 'email'
+          scope: 'email profile'
         });
-        this.auth = window.gapi.auth2.getAuthInstance();
-        this.onAuthChange(this.auth.isSignedIn.get());
-        this.auth.isSignedIn.listen(this.onAuthChange);
+        this.google = window.gapi.auth2.getAuthInstance();
+        this.onAuthChange(this.google.isSignedIn.get());
+        this.google.isSignedIn.listen(this.onAuthChange);
       });
     } catch (error) {
       console.error(error);
@@ -21,16 +21,17 @@ class GoogleAuth extends Component {
   }
 
   onTrySignIn = () => {
-    this.auth.signIn();
+    this.google.signIn();
   };
 
   onTrySignOut = () => {
-    this.auth.signOut();
+    this.google.signOut();
   };
 
   onAuthChange = isSignedIn => {
     if (isSignedIn) {
-      this.props.signIn();
+      const user = this.google.currentUser.get();
+      this.props.signIn(user.getId(), user.getBasicProfile().getEmail());
     } else {
       this.props.signOut();
     }
@@ -43,6 +44,7 @@ class GoogleAuth extends Component {
       return (
         <button className="ui red google button" onClick={this.onTrySignOut}>
           <i className="google icon" />
+          {this.props.email} <br />
           Sign Out
         </button>
       );
@@ -60,8 +62,12 @@ class GoogleAuth extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return { isSignedIn: state.auth.isSignedIn };
+const mapStateToProps = a => {
+  return {
+    isSignedIn: a.authReduc.isSignedIn,
+    userId: a.authReduc.userId,
+    email: a.authReduc.email
+  };
 };
 
 export default connect(mapStateToProps, { signIn, signOut })(GoogleAuth);
