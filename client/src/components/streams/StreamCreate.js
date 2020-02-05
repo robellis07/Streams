@@ -25,7 +25,7 @@ class StreamCreate extends Component {
     );
   };
 
-  onSubmit = formValues => {
+  onSubmit = async formValues => {
     this.props.createStream(formValues);
   };
 
